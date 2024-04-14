@@ -1,3 +1,4 @@
+# importing libraries
 import streamlit
 import streamlit as st
 import pandas as pd
@@ -6,19 +7,24 @@ import scipy.stats as stats
 import statsmodels.stats.api as sms
 import numpy as np
 
+# setting the title of the app
 st.title("A/B Testing")
 
+# for the user to upload a dataset
 uploaded_file = st.file_uploader("Upload your dataset here")
-if uploaded_file is not None:
-    file = pd.read_excel(uploaded_file, "ABTest")
+if (
+    uploaded_file is not None
+):  # to prevent NoneType error if the user doesnt upload the dataset
+    file = pd.read_excel(uploaded_file, "ABTest")  # reading the file
 
-    def abtesting(data):
+    def abtesting(data):  # Declaring the AB test function
         z = data[data["Group"] == "Control"]["Visitors"] / data["Clicks"]
         w = data[data["Group"] == "Experiment"]["Visitors"] / data["Clicks"]
         z = z.fillna(z.median())
         w = w.fillna(w.median())
-        data["Converted"] = np.where(z < w, 1, 0)
+        data["Converted"] = np.where(z < w, 1, 0)  # creating the converted column
 
+        # calculating the conversion rate
         control_sample = data[data["Group"] == "Control"].sample(
             n=5000, random_state=12
         )
@@ -37,6 +43,7 @@ if uploaded_file is not None:
         st.write(conversion_rate)
         print("*" * 90)
 
+        # calculating the pvalue, zstat, ci for the a/b test
         control_results = ab_test[ab_test["Group"] == "Control"]["Converted"]
         treatment_results = ab_test[ab_test["Group"] == "Experiment"]["Converted"]
 
@@ -83,4 +90,4 @@ if uploaded_file is not None:
         else:
             st.write("Indeterminate.")
 
-    abtesting(file)
+    abtesting(file)  # calling the function
